@@ -1,7 +1,15 @@
+/*
+ * @Author: ningbo.kang
+ * @Date: 2019-11-12 18:35:19
+ * @LastEditors: ningbo.kang
+ * @LastEditTime: 2019-11-19 15:31:39
+ * @FilePath: /e2-column-resizer/src/ColumnResizer.js
+ * @Description: 描述
+ */
 /**
  * Created by jjglyn on 12/19/16.
  */
-import stringHash from "string-hash";
+import stringHash from 'string-hash';
 
 const counter = (() => {
   let count = 0;
@@ -11,28 +19,31 @@ const counter = (() => {
 })();
 
 export default class ColumnResizer {
-  ID = "id";
-  PX = "px";
-  RESIZABLE = "grip-resizable";
-  FLEX = "grip-flex";
-  legacyIE = navigator.userAgent.indexOf("Trident/4.0") > 0;
+  ID = 'id';
+  PX = 'px';
+  RESIZABLE = 'grip-resizable';
+  FLEX = 'grip-flex';
+  legacyIE = navigator.userAgent.indexOf('Trident/4.0') > 0;
 
   /**
    *
    * @param {HTMLTableElement} tb
    * @param {Object} options
    */
-  constructor(tb, options = {}) {
+  constructor(tb, options = { cache: false }) {
     // 不记忆宽度
-    // try {
-    //     this.store = sessionStorage;
-    // } catch (e) {
-    //     this.store = {};
-    // }
-    this.store = {};
+    if (options.cache) {
+      try {
+        this.store = sessionStorage;
+      } catch (e) {
+        this.store = {};
+      }
+    } else {
+      this.store = {};
+    }
     this.grip = null;
     this.tb = tb;
-    window.addEventListener("resize", this.onResize);
+    window.addEventListener('resize', this.onResize);
     // Polyfill for IE
     if (!Element.prototype.matches) {
       Element.prototype.matches = Element.prototype.msMatchesSelector;
@@ -57,7 +68,7 @@ export default class ColumnResizer {
     t.classList.remove(this.RESIZABLE);
     if (t.opt.fixed) {
       t.tableWidth = Number(
-        window.getComputedStyle(t).width.replace(/px/, "")
+        window.getComputedStyle(t).width.replace(/px/, '')
       ).valueOf();
       let mw = 0;
       for (let i = 0; i < t.columnCnt; i++) {
@@ -65,12 +76,12 @@ export default class ColumnResizer {
       }
       for (let i = 0; i < t.columnCnt; i++) {
         t.columns[i].style.width =
-          Math.round((1000 * t.columns[i].w) / mw) / 10 + "%";
+          Math.round((1000 * t.columns[i].w) / mw) / 10 + '%';
         t.columns[i].locked = true;
       }
     } else {
       this.applyBounds();
-      if (t.opt.resizeMode === "flex" && t.opt.serialize) {
+      if (t.opt.resizeMode === 'flex' && t.opt.serialize) {
         this.serializeStore();
       }
     }
@@ -93,13 +104,13 @@ export default class ColumnResizer {
     g.x = g.l;
 
     this.createStyle(
-      document.querySelector("head"),
-      "*{cursor:" + t.opt.dragCursor + "!important}"
+      document.querySelector('head'),
+      '*{cursor:' + t.opt.dragCursor + '!important}'
     );
-    document.addEventListener("touchmove", this.onGripDrag);
-    document.addEventListener("mousemove", this.onGripDrag);
-    document.addEventListener("touchend", this.onGripDragOver);
-    document.addEventListener("mouseup", this.onGripDragOver);
+    document.addEventListener('touchmove', this.onGripDrag);
+    document.addEventListener('mousemove', this.onGripDrag);
+    document.addEventListener('touchend', this.onGripDragOver);
+    document.addEventListener('mouseup', this.onGripDragOver);
     g.classList.add(t.opt.draggingClass); //add the dragging class (to allow some visual feedback)
     this.grip = g;
     if (t.columns[o.i].locked) {
@@ -108,7 +119,7 @@ export default class ColumnResizer {
         c = t.columns[i];
         c.locked = false;
         c.w = Number(
-          window.getComputedStyle(c).width.replace(/px/, "")
+          window.getComputedStyle(c).width.replace(/px/, '')
         ).valueOf();
       }
     }
@@ -151,7 +162,7 @@ export default class ColumnResizer {
           t.style.minWidth = t.tableWidth + x - grip.l + this.PX;
         } else {
           t.tableWidth = Number(
-            window.getComputedStyle(t).width.replace(/px/, "")
+            window.getComputedStyle(t).width.replace(/px/, '')
           ).valueOf();
         }
       } else {
@@ -172,11 +183,11 @@ export default class ColumnResizer {
    */
   onGripDragOver = e => {
     const grip = this.grip;
-    document.removeEventListener("touchend", this.onGripDragOver);
-    document.removeEventListener("mouseup", this.onGripDragOver);
-    document.removeEventListener("touchmove", this.onGripDrag);
-    document.removeEventListener("mousemove", this.onGripDrag);
-    const last = document.querySelector("head").lastChild;
+    document.removeEventListener('touchend', this.onGripDragOver);
+    document.removeEventListener('mouseup', this.onGripDragOver);
+    document.removeEventListener('touchmove', this.onGripDrag);
+    document.removeEventListener('mousemove', this.onGripDrag);
+    const last = document.querySelector('head').lastChild;
     last.parentNode.removeChild(last);
     if (!grip) {
       return;
@@ -219,24 +230,24 @@ export default class ColumnResizer {
     }
     const tb = this.tb;
     const id = tb.getAttribute(this.ID) || this.RESIZABLE + counter();
-    if (!tb.matches("table") || (tb.extended && !options.partialRefresh)) {
+    if (!tb.matches('table') || (tb.extended && !options.partialRefresh)) {
       return null;
     }
     //append required CSS rules
-    const head = document.querySelector("head");
+    const head = document.querySelector('head');
     const css =
-      " .grip-resizable{table-layout:fixed;} .grip-resizable > tbody > tr > td, .grip-resizable > tbody > tr > th{overflow:hidden}" +
-      " .grip-padding > tbody > tr > td, .grip-padding > tbody > tr > th{padding-left:0!important; padding-right:0!important;}" +
-      " .grip-container{ height:0px; position:relative;} .grip-handle{margin-left:-5px; position:absolute; z-index:5; }" +
-      " .grip-handle .grip-resizable{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: col-resize;top:0px}" +
-      " .grip-lastgrip{position:absolute; width:1px; } .grip-drag{ border-left:1px dotted black;	}" +
-      " .grip-flex{width:auto!important;} .grip-handle.grip-disabledgrip .grip-resizable{cursor:default; display:none;}";
+      ' .grip-resizable{table-layout:fixed;} .grip-resizable > tbody > tr > td, .grip-resizable > tbody > tr > th{overflow:hidden}' +
+      ' .grip-padding > tbody > tr > td, .grip-padding > tbody > tr > th{padding-left:0!important; padding-right:0!important;}' +
+      ' .grip-container{ height:0px; position:relative;} .grip-handle{margin-left:-5px; position:absolute; z-index:5; }' +
+      ' .grip-handle .grip-resizable{position:absolute;background-color:red;filter:alpha(opacity=1);opacity:0;width:10px;height:100%;cursor: col-resize;top:0px}' +
+      ' .grip-lastgrip{position:absolute; width:1px; } .grip-drag{ border-left:1px dotted black;	}' +
+      ' .grip-flex{width:auto!important;} .grip-handle.grip-disabledgrip .grip-resizable{cursor:default; display:none;}';
     this.createStyle(head, css);
-    if (options.hoverCursor && options.hoverCursor !== "col-resize") {
+    if (options.hoverCursor && options.hoverCursor !== 'col-resize') {
       const css =
-        ".grip-handle .grip-resizable:hover{cursor:" +
+        '.grip-handle .grip-resizable:hover{cursor:' +
         options.hoverCursor +
-        "!important}";
+        '!important}';
       this.createStyle(head, css);
     }
     tb.setAttribute(this.ID, id);
@@ -244,12 +255,10 @@ export default class ColumnResizer {
     tb.opt = this.extendOptions(options);
     const headers = this.getTableHeaders(tb);
     this.extendTable(headers);
-    if (options.remoteTable && options.remoteTable.matches("table")) {
+    if (options.remoteTable && options.remoteTable.matches('table')) {
       const remoteHeaders = this.getTableHeaders(tb.opt.remoteTable);
       if (headers.length === remoteHeaders.length) {
         this.extendRemoteTable(tb.opt.remoteTable, remoteHeaders, tb);
-      } else {
-        console.warn("column count for remote table did not match");
       }
     }
     return oldOptions;
@@ -266,12 +275,12 @@ export default class ColumnResizer {
       return window.getComputedStyle(col).width;
     });
     t.style.width = window.getComputedStyle(t).width;
-    t.tableWidth = Number(t.style.width.replace(/px/, "")).valueOf();
+    t.tableWidth = Number(t.style.width.replace(/px/, '')).valueOf();
     //prevent table width changes
     t.classList.remove(this.FLEX);
     t.columns.forEach((col, i) => {
       col.style.width = w[i];
-      col.w = Number(w[i].replace(/px/, "")).valueOf();
+      col.w = Number(w[i].replace(/px/, '')).valueOf();
     });
     //allow table width changes
     t.classList.add(this.FLEX);
@@ -283,18 +292,18 @@ export default class ColumnResizer {
   serializeStore = () => {
     const store = this.store;
     const t = this.tb;
-    store[t.getAttribute(this.ID)] = "";
+    store[t.getAttribute(this.ID)] = '';
     let m = 0;
     for (let i = 0; i < t.columns.length; i++) {
-      const w = window.getComputedStyle(t.columns[i]).width.replace(/px/, "");
-      store[t.getAttribute(this.ID)] += w + ";";
+      const w = window.getComputedStyle(t.columns[i]).width.replace(/px/, '');
+      store[t.getAttribute(this.ID)] += w + ';';
       m += Number(w).valueOf();
     }
     //the last item of the serialized string is the table's active area (width)
     store[t.getAttribute(this.ID)] += m.toString();
     if (!t.opt.fixed) {
       store[t.getAttribute(this.ID)] +=
-        ";" + window.getComputedStyle(t).width.replace(/px/, "");
+        ';' + window.getComputedStyle(t).width.replace(/px/, '');
     }
   };
 
@@ -326,7 +335,7 @@ export default class ColumnResizer {
     if (!id) {
       return null;
     }
-    this.store[id] = "";
+    this.store[id] = '';
     tt.classList.remove(this.RESIZABLE);
     tt.classList.remove(this.FLEX);
     if (tt.remote) {
@@ -347,15 +356,15 @@ export default class ColumnResizer {
    */
   createStyle = (element, css) => {
     const hash = stringHash(css).toString();
-    const oldStyle = element.querySelectorAll("style");
+    const oldStyle = element.querySelectorAll('style');
     const filtered = Array.from(oldStyle).filter(style => {
       return style.gripid === hash;
     });
     if (filtered.length) {
       return;
     }
-    const style = document.createElement("style");
-    style.type = "text/css";
+    const style = document.createElement('style');
+    style.type = 'text/css';
     style.gripid = hash;
     if (style.styleSheet) {
       style.styleSheet.cssText = css;
@@ -375,10 +384,10 @@ export default class ColumnResizer {
     extOptions.fixed = true;
     extOptions.overflow = false;
     switch (extOptions.resizeMode) {
-      case "flex":
+      case 'flex':
         extOptions.fixed = false;
         break;
-      case "overflow":
+      case 'overflow':
         extOptions.fixed = false;
         extOptions.overflow = true;
         break;
@@ -392,25 +401,25 @@ export default class ColumnResizer {
    * @returns {HTMLElement[]}
    */
   getTableHeaders = table => {
-    const id = "#" + table.id;
+    const id = '#' + table.id;
     let th = Array.from(
-      table.querySelectorAll(id + ">thead>tr:nth-of-type(1)>th")
+      table.querySelectorAll(id + '>thead>tr:nth-of-type(1)>th')
     );
     th = th.concat(
-      Array.from(table.querySelectorAll(id + ">thead>tr:nth-of-type(1)>td"))
+      Array.from(table.querySelectorAll(id + '>thead>tr:nth-of-type(1)>td'))
     );
     if (!th.length) {
       th = Array.from(
-        table.querySelectorAll(id + ">tbody>tr:nth-of-type(1)>th")
+        table.querySelectorAll(id + '>tbody>tr:nth-of-type(1)>th')
       );
       th = th.concat(
-        Array.from(table.querySelectorAll(id + ">tr:nth-of-type(1)>th"))
+        Array.from(table.querySelectorAll(id + '>tr:nth-of-type(1)>th'))
       );
       th = th.concat(
-        Array.from(table.querySelectorAll(id + ">tbody>tr:nth-of-type(1)>td"))
+        Array.from(table.querySelectorAll(id + '>tbody>tr:nth-of-type(1)>td'))
       );
       th = th.concat(
-        Array.from(table.querySelectorAll(id + ">tr:nth-of-type(1)>td"))
+        Array.from(table.querySelectorAll(id + '>tr:nth-of-type(1)>td'))
       );
     }
     return this.filterInvisible(th, false);
@@ -430,7 +439,7 @@ export default class ColumnResizer {
         (width === 0 && height === 0) ||
         (node.style &&
           node.style.display &&
-          window.getComputedStyle(node).display === "none") ||
+          window.getComputedStyle(node).display === 'none') ||
         false;
       return !invisible;
     });
@@ -443,14 +452,14 @@ export default class ColumnResizer {
   extendTable = th => {
     const tb = this.tb;
     if (tb.opt.removePadding) {
-      tb.classList.add("grip-padding");
+      tb.classList.add('grip-padding');
     }
     tb.classList.add(this.RESIZABLE);
-    tb.insertAdjacentHTML("beforebegin", '<div class="grip-container"/>'); //class forces table rendering in fixed-layout mode to prevent column's min-width
+    tb.insertAdjacentHTML('beforebegin', '<div class="grip-container"/>'); //class forces table rendering in fixed-layout mode to prevent column's min-width
     tb.grips = []; // grips
     tb.columns = []; // columns
     tb.tableWidth = Number(
-      window.getComputedStyle(tb).width.replace(/px/, "")
+      window.getComputedStyle(tb).width.replace(/px/, '')
     ).valueOf();
     tb.gripContainer = tb.previousElementSibling;
     if (tb.opt.marginLeft) {
@@ -465,14 +474,14 @@ export default class ColumnResizer {
           ? tb.cellSpacing || tb.currentStyle.borderSpacing
           : window
               .getComputedStyle(tb)
-              .borderSpacing.split(" ")[0]
-              .replace(/px/, "")
+              .borderSpacing.split(' ')[0]
+              .replace(/px/, '')
       ) || 2;
     tb.borderSpace =
       parseInt(
         this.legacyIE
           ? tb.border || tb.currentStyle.borderLeftWidth
-          : window.getComputedStyle(tb).borderLeftWidth.replace(/px/, "")
+          : window.getComputedStyle(tb).borderLeftWidth.replace(/px/, '')
       ) || 1;
     tb.extended = true;
     this.createGrips(th);
@@ -487,27 +496,27 @@ export default class ColumnResizer {
   extendRemoteTable = (tb, th, controller) => {
     const options = controller.opt;
     if (options.removePadding) {
-      tb.classList.add("grip-padding");
+      tb.classList.add('grip-padding');
     }
     tb.classList.add(this.RESIZABLE);
     if (!tb.getAttribute(this.ID)) {
-      tb.setAttribute(this.ID, controller.getAttribute(this.ID) + "remote");
+      tb.setAttribute(this.ID, controller.getAttribute(this.ID) + 'remote');
     }
     tb.columns = []; // columns
     th.forEach((header, index) => {
       const column = th[index];
       column.w = controller.columns[index].w;
       column.style.width = column.w + this.PX;
-      column.removeAttribute("width");
+      column.removeAttribute('width');
       tb.columns.push(column);
     });
     tb.tableWidth = controller.tableWidth;
     tb.cellSpace = controller.cellSpace;
     tb.borderSpace = controller.borderSpace;
-    const cg = Array.from(tb.querySelectorAll("col"));
+    const cg = Array.from(tb.querySelectorAll('col'));
     tb.columnGrp = this.filterInvisible(cg, true);
     tb.columnGrp.forEach((col, index) => {
-      col.removeAttribute("width");
+      col.removeAttribute('width');
       col.style.width = controller.columnGrp[index].style.width;
     });
     controller.remote = tb;
@@ -520,11 +529,11 @@ export default class ColumnResizer {
   createGrips = th => {
     const t = this.tb;
     t.columnGrp = this.filterInvisible(
-      Array.from(t.querySelectorAll("col")),
+      Array.from(t.querySelectorAll('col')),
       true
     );
     t.columnGrp.forEach(col => {
-      col.removeAttribute("width");
+      col.removeAttribute('width');
     });
     t.columnCnt = th.length;
     let storage = false;
@@ -538,7 +547,7 @@ export default class ColumnResizer {
     th.forEach((header, index) => {
       const column = th[index];
       const dc = t.opt.disabledColumns.indexOf(index) !== -1;
-      this.createDiv(t.gripContainer, "grip-handle");
+      this.createDiv(t.gripContainer, 'grip-handle');
       const handle = t.gripContainer.lastChild;
       if (!dc && t.opt.gripInnerHtml) {
         //add the visual node to be used as grip
@@ -546,28 +555,28 @@ export default class ColumnResizer {
       }
       this.createDiv(handle, this.RESIZABLE);
       if (index === t.columnCnt - 1) {
-        handle.classList.add("grip-lastgrip");
+        handle.classList.add('grip-lastgrip');
         if (t.opt.fixed) {
           // if the table resizing mode is set to fixed, the last grip is removed since table
           // width can not change
-          handle.innerHTML = "";
+          handle.innerHTML = '';
         }
       }
-      handle.addEventListener("touchstart", this.onGripMouseDown, {
+      handle.addEventListener('touchstart', this.onGripMouseDown, {
         capture: true,
-        passive: true
+        passive: true,
       });
-      handle.addEventListener("mousedown", this.onGripMouseDown, true);
+      handle.addEventListener('mousedown', this.onGripMouseDown, true);
 
       if (!dc) {
-        handle.classList.remove("grip-disabledgrip");
-        handle.addEventListener("touchstart", this.onGripMouseDown, {
+        handle.classList.remove('grip-disabledgrip');
+        handle.addEventListener('touchstart', this.onGripMouseDown, {
           capture: true,
-          passive: true
+          passive: true,
         });
-        handle.addEventListener("mousedown", this.onGripMouseDown, true);
+        handle.addEventListener('mousedown', this.onGripMouseDown, true);
       } else {
-        handle.classList.add("grip-disabledgrip");
+        handle.classList.add('grip-disabledgrip');
       }
 
       handle.t = t;
@@ -575,24 +584,24 @@ export default class ColumnResizer {
       if (t.opt.widths[index]) {
         column.w = t.opt.widths[index];
       } else if (storage) {
-        column.w = Number(column.style.width.replace(/px/, "")).valueOf();
+        column.w = Number(column.style.width.replace(/px/, '')).valueOf();
       } else {
         column.w = Number(
-          window.getComputedStyle(column).width.replace(/px/, "")
+          window.getComputedStyle(column).width.replace(/px/, '')
         ).valueOf();
       }
       column.style.width = column.w + this.PX;
-      column.removeAttribute("width");
+      column.removeAttribute('width');
       handle.data = {
         i: index,
         t: t.getAttribute(this.ID),
-        last: index === t.columnCnt - 1
+        last: index === t.columnCnt - 1,
       };
       t.grips.push(handle);
       t.columns.push(column);
     });
-    let ot = Array.from(t.querySelectorAll("td"));
-    ot.concat(Array.from(t.querySelectorAll("th")));
+    let ot = Array.from(t.querySelectorAll('td'));
+    ot.concat(Array.from(t.querySelectorAll('th')));
     //the width attribute is removed from all table cells which are not nested in other tables and don't belong to the header array
     ot = ot.filter(node => {
       // .not(th)
@@ -604,15 +613,15 @@ export default class ColumnResizer {
     ot = ot.filter(node => {
       //.not('table th, table td')
       return !(
-        node.querySelectorAll("table th").length ||
-        node.querySelectorAll("table td").length
+        node.querySelectorAll('table th').length ||
+        node.querySelectorAll('table td').length
       );
     });
     ot.forEach(table => {
-      table.removeAttribute("width");
+      table.removeAttribute('width');
     });
     if (!t.opt.fixed) {
-      t.removeAttribute("width");
+      t.removeAttribute('width');
       t.classList.add(this.FLEX);
     }
     this.syncGrips();
@@ -625,13 +634,13 @@ export default class ColumnResizer {
   deserializeStore = th => {
     const t = this.tb;
     t.columnGrp.forEach(node => {
-      node.removeAttribute("width");
+      node.removeAttribute('width');
     });
     if (t.opt.flush) {
-      this.store[t.getAttribute(this.ID)] = "";
+      this.store[t.getAttribute(this.ID)] = '';
       return;
     }
-    const w = this.store[t.getAttribute(this.ID)].split(";");
+    const w = this.store[t.getAttribute(this.ID)].split(';');
     const tw = w[t.columnCnt + 1];
     if (!t.opt.fixed && tw) {
       t.style.width = tw + this.PX;
@@ -647,7 +656,7 @@ export default class ColumnResizer {
         // an existing CSS class in the 'col' elements
         t.columnGrp[i].style.width =
           (100 * Number(w[i]).valueOf()) / Number(w[t.columnCnt]).valueOf() +
-          "%";
+          '%';
       }
     }
   };
@@ -659,7 +668,7 @@ export default class ColumnResizer {
    * @param {string} text - inner HTML text
    */
   createDiv = (element, className, text) => {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.classList.add(className);
     if (text) {
       div.innerHTML = text;
@@ -726,14 +735,14 @@ export default class ColumnResizer {
 
 ColumnResizer.DEFAULTS = {
   //attributes:
-  resizeMode: "fit", //mode can be 'fit', 'flex' or 'overflow'
-  draggingClass: "grip-drag", //css-class used when a grip is being dragged (for visual feedback purposes)
-  gripInnerHtml: "", //if it is required to use a custom grip it can be done using some custom HTML
+  resizeMode: 'fit', //mode can be 'fit', 'flex' or 'overflow'
+  draggingClass: 'grip-drag', //css-class used when a grip is being dragged (for visual feedback purposes)
+  gripInnerHtml: '', //if it is required to use a custom grip it can be done using some custom HTML
   liveDrag: false, //enables table-layout updating while dragging
   minWidth: 15, //minimum width value in pixels allowed for a column
   headerOnly: false, //specifies that the size of the the column resizing anchors will be bounded to the size of the first row
-  hoverCursor: "col-resize", //cursor to be used on grip hover
-  dragCursor: "col-resize", //cursor to be used while dragging
+  hoverCursor: 'col-resize', //cursor to be used on grip hover
+  dragCursor: 'col-resize', //cursor to be used while dragging
   flush: false, //when it is required to prevent layout restoration after postback, 'flush' will remove its associated layout data
   marginLeft: null, //e.g. '10%', '15em', '5px' ...
   marginRight: null, //e.g. '10%', '15em', '5px' ...
@@ -747,5 +756,5 @@ ColumnResizer.DEFAULTS = {
 
   //events:
   onDrag: null, //callback function to be fired during the column resizing process if liveDrag is enabled
-  onResize: null //callback function fired when the dragging process is over
+  onResize: null, //callback function fired when the dragging process is over
 };
